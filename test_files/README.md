@@ -1,9 +1,9 @@
-The three fixtures in this directory come from the public SheetJS test_files
-corpus already pinned by @stackline/xlsx v1.0.7. They exercise the unchanged
+The three fixtures in this directory were copied from the existing local
+@stackline/xlsx v1.0.7 fixture directory. They exercise the unchanged
 upstream test.js. Empty year/presentation directories retain its directory
 layout; those larger corpora are not included in this focused suite.
 
-Fixture source: [XLSX v1.0.7, commit 976faafa3e8a00fbdfe5591528d1c28c56832bc6](https://github.com/alexandroit/sheetjs/tree/976faafa3e8a00fbdfe5591528d1c28c56832bc6/test_files).
+Repository reference: [XLSX v1.0.7, commit 976faafa3e8a00fbdfe5591528d1c28c56832bc6](https://github.com/alexandroit/sheetjs/tree/976faafa3e8a00fbdfe5591528d1c28c56832bc6/test_files) records SheetJS/test_files submodule commit `1ea05a3eee0a746c102dea42e729b31e4ebfca35`. The upstream fixture download returned HTTP 404 during this review, so the hashes below identify the exact local inputs used; a fresh comparison against that remote corpus was not possible.
 
 SHA-256:
 
