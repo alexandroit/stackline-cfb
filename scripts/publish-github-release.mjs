@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import {createHash} from 'node:crypto'
 import {spawnSync} from 'node:child_process'
-import {readFile, readdir} from 'node:fs/promises'
+import {readFile, readdir, mkdtemp, rm} from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 
 const directory = path.resolve(process.argv[2])
@@ -19,7 +20,9 @@ function gh(args, {optional = false, input} = {}) {
   return result.stdout.trim() ? JSON.parse(result.stdout) : null
 }
 function api(route, options) { return gh(['api', `repos/${repository}/${route}`], options) }
-assert.equal(api('immutable-releases').enabled, true, 'Enable release immutability before publishing')
+// Repository immutability is enabled and verified by the owner during setup.
+// Its settings endpoint requires Administration permission, which GITHUB_TOKEN
+// intentionally does not have. The published release's immutable flag is checked below.
 let ref = api(`git/ref/tags/${tag}`, {optional: true})
 if (!ref) {
   ref = gh(['api', '--method', 'POST', `repos/${repository}/git/refs`, '--input', '-'], {
@@ -38,6 +41,28 @@ if (!release) {
   })
 }
 const names = (await readdir(directory)).sort()
+if (!release.draft) {
+  assert.equal(release.immutable, true)
+  assert.deepEqual(release.assets.map(asset => asset.name).sort(), names)
+  const stored = await mkdtemp(path.join(os.tmpdir(), 'stackline-release-check-'))
+  try {
+    const download = spawnSync('gh', ['release', 'download', tag, '--repo', repository, '--dir', stored], {encoding: 'utf8'})
+    assert.equal(download.status, 0, download.stderr)
+    for (const asset of release.assets) {
+      assert.equal(path.basename(asset.name), asset.name)
+      const digest = createHash('sha256').update(await readFile(path.join(stored, asset.name))).digest('hex')
+      assert.equal(asset.digest, `sha256:${digest}`, `Stored release asset differs: ${asset.name}`)
+    }
+    const previous = JSON.parse(await readFile(path.join(stored, 'registry-verification.json'), 'utf8'))
+    for (const key of ['package', 'sourceCommit', 'publicationRun', 'archive', 'sha256', 'integrity', 'status']) {
+      assert.equal(previous[key], evidence[key], `Published release has a different ${key}`)
+    }
+    const archiveDigest = createHash('sha256').update(await readFile(path.join(stored, evidence.archive))).digest('hex')
+    assert.equal(archiveDigest, evidence.sha256)
+  } finally { await rm(stored, {recursive: true, force: true}) }
+  console.log(JSON.stringify({release: release.html_url, immutable: true, sourceCommit: evidence.sourceCommit, status: 'VERIFIED_EXISTING'}))
+  process.exit(0)
+}
 if (release.draft) {
   const uploaded = spawnSync('gh', ['release', 'upload', tag, ...names.map(name => path.join(directory, name)), '--repo', repository, '--clobber'], {encoding: 'utf8'})
   assert.equal(uploaded.status, 0, uploaded.stderr)
