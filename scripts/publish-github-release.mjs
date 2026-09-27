@@ -35,8 +35,10 @@ assert.equal(object.type, 'commit')
 assert.equal(object.sha, evidence.sourceCommit, 'Existing release tag points to a different source commit')
 let release = api(`releases/tags/${tag}`, {optional: true})
 if (!release) {
+  // The tag is already verified above. Do not pass target_commitish: GitHub
+  // otherwise requires workflow-write permission for historical workflow files.
   release = gh(['api', '--method', 'POST', `repos/${repository}/releases`, '--input', '-'], {
-    input: JSON.stringify({tag_name: tag, target_commitish: evidence.sourceCommit,
+    input: JSON.stringify({tag_name: tag,
       name: `${metadata.name} ${metadata.version}`, body: await readFile(path.join(directory, 'RELEASE_NOTES.md'), 'utf8'), draft: true})
   })
 }
