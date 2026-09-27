@@ -1,8 +1,8 @@
 {
-  "name": "cfb",
-  "version": "1.2.2",
+  "name": "@stackline/cfb",
+  "version": "1.0.0",
   "author": "sheetjs",
-  "description": "Compound File Binary File Format extractor",
+  "description": "SheetJS CFB-compatible compound file parser with bounded FAT traversal",
   "keywords": [
     "cfb",
     "compression",
@@ -15,33 +15,23 @@
     "process": false,
     "fs": false
   },
-  "dependencies": {
-    "adler-32": "~1.3.0",
-    "crc-32": "~1.2.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@sheetjs/uglify-js": "~2.7.3",
-    "@types/node": "^8.10.25",
-    "acorn": "7.4.1",
-    "alex": "8.1.1",
-    "blanket": "~1.2.3",
-    "dtslint": "~0.1.2",
-    "eslint": "7.23.0",
-    "eslint-plugin-html": "^6.1.2",
-    "eslint-plugin-json": "^2.1.2",
-    "jscs": "3.0.7",
-    "jshint": "2.13.4",
-    "mocha": "~2.5.3",
-    "typescript": "2.2.0"
+    "crc-32": "1.2.2",
+    "mocha": "12.0.2",
+    "uglify-js": "3.19.3",
+    "typescript": "7.0.2",
+    "@types/node": "20.19.43"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/SheetJS/js-cfb.git"
+    "url": "git+https://github.com/alexandroit/stackline-cfb.git"
   },
   "scripts": {
-    "pretest": "make init",
-    "test": "make test",
-    "dtslint": "dtslint types"
+    "build": "node scripts/build.cjs",
+    "test": "npm run build && mocha --timeout 20000 test.js && node --test test/regression.test.cjs",
+    "test:regression": "node --test test/regression.test.cjs",
+    "test:package": "node scripts/test-package.mjs"
   },
   "config": {
     "blanket": {
@@ -55,14 +45,19 @@
     "types/index.d.ts",
     "types/tsconfig.json",
     "cfb.js",
-    "xlscfb.flow.js"
+    "xlscfb.flow.js",
+    "CHANGELOG.md",
+    "SECURITY.md"
   ],
-  "homepage": "http://sheetjs.com/",
+  "homepage": "https://github.com/alexandroit/stackline-cfb",
   "bugs": {
-    "url": "https://github.com/SheetJS/js-cfb/issues"
+    "url": "https://github.com/alexandroit/stackline-cfb/issues"
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=0.8"
+    "node": ">=20.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

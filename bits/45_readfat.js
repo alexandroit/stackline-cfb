@@ -21,6 +21,7 @@ function get_sector_list(sectors/*:Array<RawBytes>*/, start/*:number*/, fat_addr
 	if(!chkd) chkd = [];
 	var modulus = ssz - 1, j = 0, jj = 0;
 	for(j=start; j>=0;) {
+		if(chkd[j]) throw new Error("Cycle detected in FAT chain at sector " + j);
 		chkd[j] = true;
 		buf[buf.length] = j;
 		buf_chain.push(sectors[j]);

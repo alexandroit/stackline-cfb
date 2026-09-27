@@ -1,3 +1,30 @@
+# @stackline/cfb
+
+An independent Apache-2.0 maintenance fork of `cfb@1.2.2`.
+
+```sh
+npm install @stackline/cfb
+```
+
+```js
+const CFB = require('@stackline/cfb');
+```
+
+Version 1.0.0 preserves the upstream API and rejects cyclic FAT chains instead
+of hanging while parsing a damaged compound file (upstream issue
+[SheetJS/js-cfb#11](https://github.com/SheetJS/js-cfb/issues/11)). The declared
+checksum runtime dependencies were unused because the implementation already
+embeds its checksum code; this package has no runtime dependencies.
+
+Node.js 20.19 or newer is the supported development/runtime target. `npm test`
+builds the CommonJS/browser artifacts, runs the upstream API suite against three
+pinned public fixtures, and checks corrupted input and archive round trips.
+This selected fixture set is not the full upstream document corpus.
+
+The original source and attribution are retained below.
+
+---
+
 # Container File Blobs
 
 Pure JS implementation of various container file formats, including ZIP and CFB.

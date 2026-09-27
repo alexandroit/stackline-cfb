@@ -1,3 +1,15 @@
+# Changelog
+
+## 1.0.0
+
+- Forked cfb 1.2.2 at ad93f76a36f893362efe96f738a327c290c1f2a9.
+- Reject cyclic FAT chains in get_sector_list, covering upstream issue #11.
+- Remove unused declared checksum runtime dependencies; keep the embedded code.
+- Add bounded child-process regression, browser bundle regression and CFB/ZIP tests.
+- Replace legacy development tooling with a portable build and current test tools.
+
+## Upstream history
+
 # CHANGELOG
 
 This log is intended to keep track of backwards-incompatible changes, including
