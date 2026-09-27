@@ -35,6 +35,12 @@ assert.equal(object.type, 'commit')
 assert.equal(object.sha, evidence.sourceCommit, 'Existing release tag points to a different source commit')
 let release = api(`releases/tags/${tag}`, {optional: true})
 if (!release) {
+  // The tag endpoint only returns published releases. Resume a prior draft
+  // through the authenticated list instead of creating a duplicate release.
+  const pages = gh(['api', '--paginate', '--slurp', `repos/${repository}/releases?per_page=100`])
+  release = pages.flat().find(candidate => candidate.draft && candidate.tag_name === tag)
+}
+if (!release) {
   // The tag is already verified above. Do not pass target_commitish: GitHub
   // otherwise requires workflow-write permission for historical workflow files.
   release = gh(['api', '--method', 'POST', `repos/${repository}/releases`, '--input', '-'], {
