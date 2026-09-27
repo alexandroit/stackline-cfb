@@ -20,7 +20,7 @@ export async function retryAttestationAudit(operation, { attempts = 24, wait = (
 export async function retryRegistryInstall(operation, {
   packageName,
   version,
-  attempts = 24,
+  attempts = 120,
   wait = () => delay(5_000)
 } = {}) {
   assert.equal(typeof packageName, 'string')
@@ -28,7 +28,7 @@ export async function retryRegistryInstall(operation, {
   const identity = `${packageName}@${version}`
   const registryPaths = [
     encodeURIComponent(packageName),
-    encodeURIComponent(packageName).replace('%40', '@')
+    encodeURIComponent(packageName).replaceAll('%40', '@')
   ].map((value) => `registry.npmjs.org/${value}`.toLowerCase())
   let result
   for (let attempt = 0; attempt < attempts; attempt++) {

@@ -26,6 +26,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: node scripts/ci-install.mjs
+      - run: node --test scripts/registry-requests.test.mjs
       - run: npm run build --if-present
       - run: npm test
       - run: npm run lint --if-present
