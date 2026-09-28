@@ -1,5 +1,20 @@
 # @stackline/cfb
 
+> Read and write compound files and ZIP containers with the SheetJS CFB API and bounded FAT traversal.
+
+[![npm version](https://img.shields.io/npm/v/@stackline/cfb.svg?style=flat-square)](https://www.npmjs.com/package/@stackline/cfb)
+[![license](https://img.shields.io/npm/l/@stackline/cfb.svg?style=flat-square)](https://github.com/alexandroit/stackline-cfb/blob/main/LICENSE)
+[![GitHub repository](https://img.shields.io/badge/GitHub-Repository-181717?style=flat-square&logo=github)](https://github.com/alexandroit/stackline-cfb)
+
+**[Documentation](https://github.com/alexandroit/stackline-cfb#readme)** |
+**[npm](https://www.npmjs.com/package/@stackline/cfb)** |
+**[Issues](https://github.com/alexandroit/stackline-cfb/issues)** |
+**[Repository](https://github.com/alexandroit/stackline-cfb)**
+
+**Package version:** `1.0.1`
+
+## Why this package?
+
 An independent Apache-2.0 maintenance fork of `cfb@1.2.2`.
 
 ```sh
@@ -25,17 +40,23 @@ The original source and attribution are retained below.
 
 ---
 
-# Container File Blobs
-
 Pure JS implementation of various container file formats, including ZIP and CFB.
 
-[![Build Status](https://travis-ci.org/SheetJS/js-cfb.svg?branch=master)](https://travis-ci.org/SheetJS/js-cfb)
-[![Coverage Status](http://img.shields.io/coveralls/SheetJS/js-cfb/master.svg)](https://coveralls.io/r/SheetJS/js-cfb?branch=master)
-[![Dependencies Status](https://david-dm.org/sheetjs/js-cfb/status.svg)](https://david-dm.org/sheetjs/js-cfb)
-[![NPM Downloads](https://img.shields.io/npm/dt/cfb.svg)](https://npmjs.org/package/cfb)
-[![Analytics](https://ga-beacon.appspot.com/UA-36810333-1/SheetJS/js-cfb?pixel)](https://github.com/SheetJS/js-cfb)
+## Compatibility
+
+| Item | Value |
+| --- | --- |
+| Package | `@stackline/cfb@1.0.1` |
+| Supported Node.js | `>=20.19.0` |
+| Module entry | `./cfb` (CommonJS) |
+| Runtime dependencies | 0 direct dependencies |
+| Types | `types` |
 
 ## Installation
+
+```bash
+npm install @stackline/cfb
+```
 
 In the browser:
 
@@ -43,21 +64,29 @@ In the browser:
 <script src="dist/cfb.min.js" type="text/javascript"></script>
 ```
 
-With [npm](https://www.npmjs.org/package/cfb):
+With [npm](https://www.npmjs.com/package/@stackline/cfb):
 
 ```bash
-$ npm install cfb
+$ npm install @stackline/cfb
 ```
 
 The `xlscfb.js` file is designed to be embedded in [js-xlsx](http://git.io/xlsx)
 
+## Usage
 
-## Library Usage
+```js
+const CFB = require('@stackline/cfb');
+const archive = CFB.utils.cfb_new();
+CFB.utils.cfb_add(archive, 'hello.txt', Buffer.from('Hello'));
+const bytes = CFB.write(archive, { type: 'buffer', fileType: 'zip' });
+```
+
+### Library Usage
 
 In node:
 
 ```js
-var CFB = require('cfb');
+var CFB = require('@stackline/cfb');
 ```
 
 For example, to get the Workbook content from an Excel 2003 XLS file:
@@ -68,14 +97,20 @@ var workbook = CFB.find(cfb, 'Workbook');
 var data = workbook.content;
 ```
 
+## Security
 
-## Command-Line Utility Usage
+The parser rejects cyclic FAT chains instead of looping indefinitely. See the security policy for supported reporting and parser limitations.
+
+See the [security policy](https://github.com/alexandroit/stackline-cfb/blob/main/SECURITY.md).
+
+## API Surface
+
+### Command-Line Utility Usage
 
 The [`cfb-cli`](https://www.npmjs.com/package/cfb-cli) module ships with a CLI
 tool for manipulating and inspecting supported files.
 
-
-## JS API
+### JS API
 
 TypeScript definitions are maintained in `types/index.d.ts`.
 
@@ -105,7 +140,6 @@ name, if there are no slashes) and returns an entry object or null if not found.
 | `"file"`   | string: path of file that will be read (nodejs only)            |
 | (default)  | buffer or array of 8-bit unsigned int (byte `n` is `data[n]`)   |
 
-
 ### Write Options
 
 `CFB.write` and `CFB.writeFile` take options argument.
@@ -130,8 +164,7 @@ name, if there are no slashes) and returns an entry object or null if not found.
 
 `opts.compression` enables DEFLATE compression for ZIP file type.
 
-
-## Utility Functions
+### Utility Functions
 
 The utility functions are available in the `CFB.utils` object.  Functions that
 accept a `name` argument strictly deal with absolute file names:
@@ -148,8 +181,7 @@ By default, the library uses a pure JS inflate/deflate implementation.  NodeJS
 If a supplied `zlib` does not support the required features, a warning will be
 displayed in the console and the pure JS fallback will be used.
 
-
-## Container Object Description
+### Container Object Description
 
 The objects returned by `parse` and `read` have the following properties:
 
@@ -171,18 +203,48 @@ interface CFBEntry {
 }
 ```
 
+### References
 
-## License
-
-Please consult the attached LICENSE file for details.  All rights not explicitly
-granted by the Apache 2.0 License are reserved by the Original Author.
-
-
-## References
-
- - `MS-CFB`: Compound File Binary File Format
+- `MS-CFB`: Compound File Binary File Format
  - ZIP `APPNOTE.TXT`: .ZIP File Format Specification
  - RFC1951: https://www.ietf.org/rfc/rfc1951.txt
  - RFC2045: https://www.ietf.org/rfc/rfc2045.txt
  - RFC2557: https://www.ietf.org/rfc/rfc2557.txt
 
+## Local Development
+
+Clone the [repository](https://github.com/alexandroit/stackline-cfb) and run the following commands from its root:
+
+```bash
+npm ci
+npm run build
+npm test
+```
+
+## Consumer Smoke Test
+
+`npm run test:package` packs the library and exercises an isolated consumer using the repository fixture.
+
+## Release Checklist
+
+1. Update the package version, lockfile, generated version fields, and changelog together.
+2. Run the development checks above and audit both `npm audit` and `npm audit --omit=dev`.
+3. Use the [GitHub publish workflow](https://github.com/alexandroit/stackline-cfb/actions/workflows/publish.yml) with its `Prod` environment to publish the exact CI tarball.
+4. Verify public npm bytes, package identity, provenance, and the immutable GitHub release evidence.
+
+## Community and Support
+
+Report reproducible package issues in the [issue tracker](https://github.com/alexandroit/stackline-cfb/issues).
+Use the [security policy](https://github.com/alexandroit/stackline-cfb/blob/main/SECURITY.md) for security reports.
+
+- [Stackline / Alexandro.Net](https://alexandro.net/)
+- [GitHub](https://github.com/alexandroit)
+- [Maintainer LinkedIn](https://www.linkedin.com/in/aleinfo/)
+- [Reddit community: r/Stackline](https://www.reddit.com/r/Stackline/)
+
+## License
+
+[Apache-2.0](https://github.com/alexandroit/stackline-cfb/blob/main/LICENSE). Original copyright notices and upstream attribution are retained.
+
+Please consult the attached LICENSE file for details.  All rights not explicitly
+granted by the Apache 2.0 License are reserved by the Original Author.

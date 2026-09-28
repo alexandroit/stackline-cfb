@@ -286,7 +286,7 @@ return CRC32;
 /* [MS-CFB] v20171201 */
 var CFB = /*#__PURE__*/(function _CFB(){
 var exports/*:CFBModule*/ = /*::(*/{}/*:: :any)*/;
-exports.version = '1.0.0';
+exports.version = '1.0.1';
 /* [MS-CFB] 2.6.4 */
 function namecmp(l/*:string*/, r/*:string*/)/*:number*/ {
 	var L = l.split("/"), R = r.split("/");

@@ -1,12 +1,19 @@
 {
   "name": "@stackline/cfb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "sheetjs",
-  "description": "SheetJS CFB-compatible compound file parser with bounded FAT traversal",
+  "description": "Read and write compound files and ZIP containers with the SheetJS CFB API and bounded FAT traversal",
   "keywords": [
+    "stackline",
     "cfb",
     "compression",
-    "office"
+    "office",
+    "compound-file",
+    "ole",
+    "zip",
+    "parser",
+    "writer",
+    "sheetjs"
   ],
   "main": "./cfb",
   "types": "types",
@@ -49,7 +56,7 @@
     "CHANGELOG.md",
     "SECURITY.md"
   ],
-  "homepage": "https://github.com/alexandroit/stackline-cfb",
+  "homepage": "https://github.com/alexandroit/stackline-cfb#readme",
   "bugs": {
     "url": "https://github.com/alexandroit/stackline-cfb/issues"
   },
