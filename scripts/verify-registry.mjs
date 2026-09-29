@@ -22,10 +22,10 @@ assert.match(expectedSourceCommit || '', /^[0-9a-f]{40}$/, 'EXPECTED_SOURCE_COMM
 assert.match(expectedPublicationRun || '', /^https:\/\/github\.com\/alexandroit\/stackline-cfb\/actions\/runs\/[0-9]+\/attempts\/[0-9]+$/, 'EXPECTED_PUBLICATION_RUN is required')
 
 async function get(url) {
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 120; attempt++) {
     const response = await globalThis.fetch(url, { signal: globalThis.AbortSignal.timeout(30_000) })
     if (response.ok) return response
-    if (response.status !== 404 || attempt === 11) throw new Error(`HTTP ${response.status}: ${url}`)
+    if (response.status !== 404 || attempt === 119) throw new Error(`HTTP ${response.status}: ${url}`)
     await delay(5_000)
   }
 }

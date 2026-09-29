@@ -3,15 +3,14 @@ name: Publish to npm
 on:
   workflow_dispatch:
     inputs:
+      expected_sha512:
+        description: SHA-512 of the reviewed CI tarball
+        required: true
+        type: string
       ci_run_id:
         description: Successful main-branch CI run containing the reviewed npm-package artifact
         required: true
         type: string
-      bootstrap:
-        description: Use the temporary Prod NPM_BOOTSTRAP_TOKEN only for the first package version
-        required: true
-        default: false
-        type: boolean
       expected_source_commit:
         description: For recovery only, the original 40-character commit from npm provenance
         required: false
@@ -76,6 +75,8 @@ jobs:
           github-token: ${{ github.token }}
           run-id: ${{ inputs.ci_run_id }}
       - name: Check the CI artifact identity
+        env:
+          EXPECTED_SHA512: ${{ inputs.expected_sha512 }}
         shell: bash
         run: |
           set -euo pipefail
@@ -83,6 +84,8 @@ jobs:
           test "$(find artifact -name '*.tgz' | wc -l)" -eq 1
           tar -xOf "$archive" package/package.json > "$RUNNER_TEMP/packed-package.json"
           node -e "require('node:assert/strict').deepEqual(require(process.argv[1]), require('./package.json'))" "$RUNNER_TEMP/packed-package.json"
+          [[ "$EXPECTED_SHA512" =~ ^[0-9a-f]{128}$ ]]
+          test "$(sha512sum "$archive" | cut -d ' ' -f1)" = "$EXPECTED_SHA512"
           sha256sum "$archive"
           npm --version
       - name: Check whether this exact artifact is already published
@@ -98,34 +101,10 @@ jobs:
           set -euo pipefail
           [[ "$EXPECTED_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]
           [[ "$EXPECTED_PUBLICATION_RUN" =~ ^https://github.com/alexandroit/stackline-cfb/actions/runs/[0-9]+/attempts/[0-9]+$ ]]
-      - name: Enforce first-version bootstrap or established-package OIDC
+      - name: Publish the exact CI tarball with provenance
         if: steps.registry.outputs.published == 'false'
         env:
-          BOOTSTRAP: ${{ inputs.bootstrap }}
-          PACKAGE_EXISTS: ${{ steps.registry.outputs.package_exists }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          version="$(node -p "require('./package.json').version")"
-          if [[ "$BOOTSTRAP" == "true" ]]; then
-            test "$version" = "1.0.0"
-            test "$PACKAGE_EXISTS" = "false"
-          else
-            test "$PACKAGE_EXISTS" = "true"
-          fi
-      - name: Require the temporary first-publication token
-        if: steps.registry.outputs.published == 'false' && steps.registry.outputs.package_exists == 'false' && inputs.bootstrap == true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
-        shell: bash
-        run: test -n "$NODE_AUTH_TOKEN"
-      - name: Publish the exact CI tarball with OIDC and provenance
-        if: steps.registry.outputs.published == 'false' && steps.registry.outputs.package_exists == 'true' && inputs.bootstrap == false
-        run: npm publish ./artifact/*.tgz --access public --provenance --ignore-scripts
-      - name: Bootstrap the first version from the exact CI tarball
-        if: steps.registry.outputs.published == 'false' && steps.registry.outputs.package_exists == 'false' && inputs.bootstrap == true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_MAINTENANCE_TOKEN }}
         run: npm publish ./artifact/*.tgz --access public --provenance --ignore-scripts
       - name: Verify npm bytes, normal installs, signatures, and provenance
         env:

@@ -19,7 +19,7 @@ fs.mkdirSync(path.join(root, 'dist'), {recursive:true});
 write('dist/cfb.js', strip(source));
 write('dist/xlscfb.js', auxiliary);
 write('dist/LICENSE', read('LICENSE'));
-const minified = uglify.minify({'cfb.js': strip(source)}, {compress:false,mangle:true,ie8:true,output:{preamble:source.split('\n')[0]},sourceMap:{filename:'cfb.min.js',url:'cfb.min.map'}});
+const minified = uglify.minify({'cfb.js': strip(source)}, {fromString:true,compress:false,mangle:{screw_ie8:false},output:{screw_ie8:false,preamble:source.split('\n')[0]},outSourceMap:'cfb.min.js',sourceMapUrl:'cfb.min.map'});
 if (minified.error) throw minified.error;
 write('dist/cfb.min.js', minified.code);
 write('dist/cfb.min.map', minified.map);

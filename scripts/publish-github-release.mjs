@@ -74,7 +74,7 @@ if (!release.draft) {
 if (release.draft) {
   const uploaded = spawnSync('gh', ['release', 'upload', tag, ...names.map(name => path.join(directory, name)), '--repo', repository, '--clobber'], {encoding: 'utf8'})
   assert.equal(uploaded.status, 0, uploaded.stderr)
-  release = gh(['api', '--method', 'PATCH', `repos/${repository}/releases/${release.id}`, '--input', '-'], {
+  gh(['api', '--method', 'PATCH', `repos/${repository}/releases/${release.id}`, '--input', '-'], {
     input: JSON.stringify({draft: false, make_latest: 'true'})
   })
 }

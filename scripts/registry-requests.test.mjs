@@ -43,8 +43,8 @@ test('an existing version must match both integrity and actual registry bytes', 
   const bytes=Buffer.from('reviewed tarball')
   const metadata={name,version}
   const official={...metadata,dist:{integrity:`sha512-${createHash('sha512').update(bytes).digest('base64')}`,tarball:'https://registry.npmjs.org/example.tgz'}}
-  const fetcher=async url=>String(url).endsWith('.tgz') ? new Response(bytes) : Response.json(official)
+  const fetcher=async url=>String(url).endsWith('.tgz') ? new globalThis.Response(bytes) : globalThis.Response.json(official)
   assert.equal(await publishedArtifactExists(metadata,bytes,fetcher),true)
   await assert.rejects(publishedArtifactExists(metadata,Buffer.from('different'),fetcher),/differs from the CI artifact/)
-  await assert.rejects(publishedArtifactExists(metadata,bytes,async url=>String(url).endsWith('.tgz') ? new Response('corrupt') : Response.json(official)),/tarball bytes differ/)
+  await assert.rejects(publishedArtifactExists(metadata,bytes,async url=>String(url).endsWith('.tgz') ? new globalThis.Response('corrupt') : globalThis.Response.json(official)),/tarball bytes differ/)
 })

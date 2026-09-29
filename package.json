@@ -1,6 +1,6 @@
 {
   "name": "@stackline/cfb",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "sheetjs",
   "description": "Read and write compound files and ZIP containers with the SheetJS CFB API and bounded FAT traversal",
   "keywords": [
@@ -24,9 +24,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "crc-32": "1.2.2",
+    "crc-32": "npm:@stackline/crc-32@1.0.0",
     "mocha": "12.0.2",
-    "uglify-js": "3.19.3",
+    "uglify-js": "npm:@stackline/uglify-js@1.0.2",
     "typescript": "7.0.2",
     "@types/node": "20.19.43"
   },

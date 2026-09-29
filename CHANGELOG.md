@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 - 2026-09-28
+
+- Reuse the verified Stackline crc-32 and uglify-js forks for compatibility validation and the distribution build.
+
 ## 1.0.1 (2026-09-28)
 
 - Standardize package documentation, preserve the API reference and upstream attribution, and add Stackline community links.
@@ -51,3 +55,5 @@ changes may not be included if they are not expected to break existing code.
 
 * Completely removed `FullPathDir`
 
+
+- Adapt the build to the existing UglifyJS 2-compatible Stackline API with named input, ES3/IE8 output, and external source maps; retain the minified-browser regression tests.
