@@ -1,11 +1,14 @@
 {
   "name": "@stackline/cfb",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "sheetjs",
   "description": "Read and write compound files and ZIP containers with the SheetJS CFB API and bounded FAT traversal",
   "keywords": [
     "stackline",
+    "npm-package",
     "cfb",
+    "typescript",
+    "nodejs",
     "compression",
     "office",
     "compound-file",
@@ -56,7 +59,7 @@
     "CHANGELOG.md",
     "SECURITY.md"
   ],
-  "homepage": "https://github.com/alexandroit/stackline-cfb#readme",
+  "homepage": "https://alexandro.net/docs/vanilla/cfb/",
   "bugs": {
     "url": "https://github.com/alexandroit/stackline-cfb/issues"
   },

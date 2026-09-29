@@ -3,15 +3,16 @@
 > Read and write compound files and ZIP containers with the SheetJS CFB API and bounded FAT traversal.
 
 [![npm version](https://img.shields.io/npm/v/@stackline/cfb.svg?style=flat-square)](https://www.npmjs.com/package/@stackline/cfb)
-[![license](https://img.shields.io/npm/l/@stackline/cfb.svg?style=flat-square)](https://github.com/alexandroit/stackline-cfb/blob/main/LICENSE)
-[![GitHub repository](https://img.shields.io/badge/GitHub-Repository-181717?style=flat-square&logo=github)](https://github.com/alexandroit/stackline-cfb)
+[![license](https://img.shields.io/npm/l/@stackline/cfb.svg?style=flat-square)](https://github.com/alexandroit/stackline-cfb)
+[![GitHub repository](https://img.shields.io/badge/GitHub-alexandroit%2Fstackline-cfb-181717?style=flat-square&logo=github)](https://github.com/alexandroit/stackline-cfb)
+[![Docs](https://img.shields.io/badge/docs-alexandro.net-0f766e?style=flat-square)](https://alexandro.net/docs/vanilla/cfb/)
+[![Reddit community](https://img.shields.io/badge/community-r%2FStackline-ff4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/r/Stackline/)
 
-**[Documentation](https://github.com/alexandroit/stackline-cfb#readme)** |
-**[npm](https://www.npmjs.com/package/@stackline/cfb)** |
-**[Issues](https://github.com/alexandroit/stackline-cfb/issues)** |
-**[Repository](https://github.com/alexandroit/stackline-cfb)**
+**[Documentation](https://alexandro.net/docs/vanilla/cfb/)** | **[npm](https://www.npmjs.com/package/@stackline/cfb)** | **[Issues](https://github.com/alexandroit/stackline-cfb/issues)** | **[Repository](https://github.com/alexandroit/stackline-cfb)**
 
-**Package version:** `1.0.1`
+**Current package version:** `1.0.3`
+
+---
 
 ## Why this package?
 
@@ -46,7 +47,7 @@ Pure JS implementation of various container file formats, including ZIP and CFB.
 
 | Item | Value |
 | --- | --- |
-| Package | `@stackline/cfb@1.0.1` |
+| Package | `@stackline/cfb@1.0.3` |
 | Supported Node.js | `>=20.19.0` |
 | Module entry | `./cfb` (CommonJS) |
 | Runtime dependencies | 0 direct dependencies |
@@ -232,19 +233,28 @@ npm test
 3. Use the [GitHub publish workflow](https://github.com/alexandroit/stackline-cfb/actions/workflows/publish.yml) with its `Prod` environment to publish the exact CI tarball.
 4. Verify public npm bytes, package identity, provenance, and the immutable GitHub release evidence.
 
-## Community and Support
-
-Report reproducible package issues in the [issue tracker](https://github.com/alexandroit/stackline-cfb/issues).
-Use the [security policy](https://github.com/alexandroit/stackline-cfb/blob/main/SECURITY.md) for security reports.
-
-- [Stackline / Alexandro.Net](https://alexandro.net/)
-- [GitHub](https://github.com/alexandroit)
-- [Maintainer LinkedIn](https://www.linkedin.com/in/aleinfo/)
-- [Reddit community: r/Stackline](https://www.reddit.com/r/Stackline/)
-
 ## License
 
 [Apache-2.0](https://github.com/alexandroit/stackline-cfb/blob/main/LICENSE). Original copyright notices and upstream attribution are retained.
 
 Please consult the attached LICENSE file for details.  All rights not explicitly
 granted by the Apache 2.0 License are reserved by the Original Author.
+
+## Credits and original authors
+
+- Original project: [js-cfb](https://github.com/SheetJS/js-cfb).
+- sheetjs.
+- Copyright (C) 2013-present   SheetJS LLC.
+- Stackline maintenance: [Alexandro Paixao Marques](https://www.linkedin.com/in/aleinfo/) and [Stackline contributors](https://github.com/alexandroit).
+
+Original copyright, license notices and contributor acknowledgements remain part of this distribution. Stackline maintenance does not replace authorship of the original work.
+
+## Community and Links
+
+- [Stackline website](https://alexandro.net/)
+- [GitHub projects](https://github.com/alexandroit)
+- [npm packages](https://www.npmjs.com/~alex360qc)
+- [Reddit community — r/Stackline](https://www.reddit.com/r/Stackline/)
+- [Maintainer LinkedIn](https://www.linkedin.com/in/aleinfo/)
+
+Use this repository's issue tracker for reproducible bugs and feature requests. Join r/Stackline for examples, usage questions and release discussions.
