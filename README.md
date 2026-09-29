@@ -4,13 +4,13 @@
 
 [![npm version](https://img.shields.io/npm/v/@stackline/cfb.svg?style=flat-square)](https://www.npmjs.com/package/@stackline/cfb)
 [![license](https://img.shields.io/npm/l/@stackline/cfb.svg?style=flat-square)](https://github.com/alexandroit/stackline-cfb)
-[![GitHub repository](https://img.shields.io/badge/GitHub-alexandroit%2Fstackline-cfb-181717?style=flat-square&logo=github)](https://github.com/alexandroit/stackline-cfb)
+[![GitHub repository](https://img.shields.io/badge/GitHub-repository-181717?style=flat-square&logo=github)](https://github.com/alexandroit/stackline-cfb)
 [![Docs](https://img.shields.io/badge/docs-alexandro.net-0f766e?style=flat-square)](https://alexandro.net/docs/vanilla/cfb/)
 [![Reddit community](https://img.shields.io/badge/community-r%2FStackline-ff4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/r/Stackline/)
 
 **[Documentation](https://alexandro.net/docs/vanilla/cfb/)** | **[npm](https://www.npmjs.com/package/@stackline/cfb)** | **[Issues](https://github.com/alexandroit/stackline-cfb/issues)** | **[Repository](https://github.com/alexandroit/stackline-cfb)**
 
-**Current package version:** `1.0.3`
+**Current package version:** `1.0.4`
 
 ---
 
@@ -47,7 +47,7 @@ Pure JS implementation of various container file formats, including ZIP and CFB.
 
 | Item | Value |
 | --- | --- |
-| Package | `@stackline/cfb@1.0.3` |
+| Package | `@stackline/cfb@1.0.4` |
 | Supported Node.js | `>=20.19.0` |
 | Module entry | `./cfb` (CommonJS) |
 | Runtime dependencies | 0 direct dependencies |
