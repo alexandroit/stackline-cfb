@@ -1,0 +1,31 @@
+{
+  "repository": "alexandroit/stackline-cfb",
+  "packages": [
+    {
+      "name": "@stackline/cfb",
+      "path": "README.md",
+      "version": "1.0.3",
+      "baselineVersion": "1.0.2",
+      "keywords": [
+        "stackline",
+        "npm-package",
+        "cfb",
+        "typescript",
+        "nodejs",
+        "compression",
+        "office",
+        "compound-file",
+        "ole",
+        "zip",
+        "parser",
+        "writer",
+        "sheetjs"
+      ],
+      "homepage": "https://alexandro.net/docs/vanilla/cfb/",
+      "baselineTarball": "https://registry.npmjs.org/@stackline/cfb/-/cfb-1.0.2.tgz",
+      "baselineIntegrity": "sha512-QGAek3lQsPhXGD6Art7TTAh72pMhq9MkOOlnGrttP1vElwDIg6SgXvk+bzWsTks0fHL5jp8LMU5/TuM9wpF9vQ==",
+      "expectedSha512": "7ef1e5f54cfacc3aee8cee5462a84382602d2f1748390fbc8744f53c708b804af26f1c219b3a144267a31dceaa0c0d1ccace526352c3384b3274f5e57ba2967c",
+      "tag": "docs-stackline-cfb-v1.0.3"
+    }
+  ]
+}
