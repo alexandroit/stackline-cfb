@@ -15,7 +15,7 @@ npm install cfb@npm:@stackline/cfb
   `utils`, and every option of `cfb@1.2.2`.
 - Read results for intact files are identical: `FullPaths`, every `FileIndex`
   field, entry key order, dates, and content bytes. Damaged input differs only
-  as listed under [intentional differences](#intentional-differences).
+  as listed under intentional differences below.
 - Write results are byte-identical for CFB, ZIP, and ZIP with compression,
   except for names of 32 or more characters (see below).
 - The package keeps the files, entry points, `browser` field, and type
