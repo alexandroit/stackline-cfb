@@ -6,3 +6,15 @@ function seed_cfb(cfb/*:CFBContainer*/)/*:void*/ {
 	cfb.FullPaths.push(cfb.FullPaths[0] + nm);
 	rebuild_cfb(cfb);
 }
+
+/* Remove the seed stream after a rebuild, for writers that must not add any
+   stream (js-cfb#22); the remaining entries stay sorted, so relink in place. */
+function unseed_cfb(cfb/*:CFBContainer*/)/*:void*/ {
+	var path = cfb.FullPaths[0] + "\u0001Sh33tJ5";
+	for(var i = 1; i < cfb.FullPaths.length; ++i) if(cfb.FullPaths[i] === path) {
+		cfb.FullPaths.splice(i, 1);
+		cfb.FileIndex.splice(i, 1);
+		link_cfb(cfb);
+		return;
+	}
+}

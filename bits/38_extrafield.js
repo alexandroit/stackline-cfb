@@ -1,3 +1,9 @@
+/* unsigned 64-bit little-endian value (exact below 2^53) */
+function read_uint64(blob/*:CFBlob*/)/*:number*/ {
+	var lo = blob.read_shift(4) >>> 0, hi = blob.read_shift(4) >>> 0;
+	return hi * 4294967296 + lo;
+}
+
 function parse_extra_field(blob/*:CFBlob*/)/*:any*/ {
 	prep_blob(blob, 0);
 	var o = /*::(*/{}/*:: :any)*/;
@@ -17,6 +23,13 @@ function parse_extra_field(blob/*:CFBlob*/)/*:any*/ {
 					if(flags & 4) p.ctime = blob.read_shift(4);
 				}
 				if(p.mtime) p.mt = new Date(p.mtime*1000);
+			}
+			break;
+			/* ZIP64 Extended Information: 8-byte values for the 32-bit header
+			   fields that hold 0xFFFFFFFF, in header order (APPNOTE 4.5.3) */
+			case 0x0001: {
+				p.values = [];
+				while(blob.l + 8 <= tgt) p.values.push(read_uint64(blob));
 			}
 			break;
 		}

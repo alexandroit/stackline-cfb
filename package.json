@@ -1,8 +1,8 @@
 {
   "name": "@stackline/cfb",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "author": "sheetjs",
-  "description": "Read and write compound files and ZIP containers with the SheetJS CFB API and bounded FAT traversal",
+  "description": "Drop-in replacement for cfb 1.2.2: read and write compound files (OLE/CFB), ZIP and MHT containers, with fixes for hangs, ZIP64, CVE-2024-22363 and bugs the original never released",
   "keywords": [
     "stackline",
     "npm-package",
@@ -14,6 +14,8 @@
     "compound-file",
     "ole",
     "zip",
+    "zip64",
+    "mht",
     "parser",
     "writer",
     "sheetjs"
@@ -25,13 +27,13 @@
     "process": false,
     "fs": false
   },
-  "dependencies": {},
   "devDependencies": {
+    "@types/node": "20.19.43",
+    "cfb": "1.2.2",
     "crc-32": "npm:@stackline/crc-32@1.0.0",
     "mocha": "12.0.2",
-    "uglify-js": "npm:@stackline/uglify-js@1.0.2",
     "typescript": "7.0.2",
-    "@types/node": "20.19.43"
+    "uglify-js": "npm:@stackline/uglify-js@1.0.2"
   },
   "repository": {
     "type": "git",
@@ -39,8 +41,10 @@
   },
   "scripts": {
     "build": "node scripts/build.cjs",
-    "test": "npm run build && mocha --timeout 20000 test.js && node --test test/regression.test.cjs",
-    "test:regression": "node --test test/regression.test.cjs",
+    "test": "npm run build && mocha --timeout 20000 test.js && node --test test/regression.test.cjs test/fixes.test.cjs && node test/legacy-smoke.js && npm run test:types",
+    "test:regression": "node --test test/regression.test.cjs test/fixes.test.cjs",
+    "test:types": "tsc -p types/tsconfig.test.json",
+    "test:differential": "node scripts/differential.mjs",
     "test:package": "node scripts/test-package.mjs"
   },
   "config": {
@@ -65,7 +69,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=0.8"
   },
   "publishConfig": {
     "access": "public"

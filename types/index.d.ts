@@ -44,6 +44,9 @@ export interface CFB$WritingOptions extends CFB$CommonOptions {
     /** Override default root entry name (CFB only) */
     root?: string;
 
+    /** Do not add the "\u0001Sh33tJ5" seed stream to CFB output (js-cfb#22) */
+    noseed?: boolean;
+
     /** Enable compression (ZIP only) */
     compression?: boolean;
 }
@@ -125,4 +128,27 @@ export interface CFB$Utils {
     CheckField(hexstr: string, fld?: string): void;
     prep_blob(blob: any, pos?: number): CFB$Blob;
     bconcat(bufs: any[]): any;
+    /** Use a zlib implementation (such as require("zlib")) for DEFLATE */
+    use_zlib(zlib: any): void;
+    /** Raw DEFLATE compression */
+    _deflateRaw(payload: any): any;
+    /** Raw DEFLATE decompression; reads from payload.l and advances it */
+    _inflateRaw(payload: any, usz?: number): any;
+    /** [MS-CFB] constants */
+    consts: CFB$Consts;
+}
+
+/** [MS-CFB] constants exported as utils.consts */
+export interface CFB$Consts {
+    MAXREGSECT: number;
+    DIFSECT: number;
+    FATSECT: number;
+    ENDOFCHAIN: number;
+    FREESECT: number;
+    HEADER_SIGNATURE: string;
+    HEADER_MINOR_VERSION: string;
+    MAXREGSID: number;
+    NOSTREAM: number;
+    HEADER_CLSID: string;
+    EntryTypes: string[];
 }

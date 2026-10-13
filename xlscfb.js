@@ -40,7 +40,7 @@ function slice_by_16_tables(T) {
 		for(c = 256 + n; c < 4096; c += 256) v = table[c] = (v >>> 8) ^ T[v & 0xFF];
 	}
 	var out = [];
-	for(n = 1; n != 16; ++n) out[n - 1] = typeof Int32Array !== 'undefined' ? table.subarray(n * 256, n * 256 + 256) : table.slice(n * 256, n * 256 + 256);
+	for(n = 1; n != 16; ++n) out[n - 1] = typeof Int32Array !== 'undefined' && typeof table.subarray == "function" ? table.subarray(n * 256, n * 256 + 256) : table.slice(n * 256, n * 256 + 256);
 	return out;
 }
 var TT = slice_by_16_tables(T0);
@@ -100,7 +100,7 @@ return CRC32;
 /* [MS-CFB] v20171201 */
 var CFB = (function _CFB(){
 var exports = {};
-exports.version = '1.0.2';
+exports.version = '1.1.0';
 /* [MS-CFB] 2.6.4 */
 function namecmp(l, r) {
 	var L = l.split("/"), R = r.split("/");
@@ -145,20 +145,20 @@ function write_dos_date(buf, date) {
 function parse_dos_date(buf) {
 	var hms = buf.read_shift(2) & 0xFFFF;
 	var ymd = buf.read_shift(2) & 0xFFFF;
-	var val = new Date();
 	var d = ymd & 0x1F; ymd >>>= 5;
 	var m = ymd & 0x0F; ymd >>>= 4;
-	val.setMilliseconds(0);
-	val.setFullYear(ymd + 1980);
-	val.setMonth(m-1);
-	val.setDate(d);
 	var S = hms & 0x1F; hms >>>= 5;
 	var M = hms & 0x3F; hms >>>= 6;
-	val.setHours(hms);
-	val.setMinutes(M);
-	val.setSeconds(S<<1);
-	return val;
+	/* Setting the fields one by one on today's date shifted the month on the
+	   29th-31st of a month; one constructor call normalizes them together. */
+	return new Date(ymd + 1980, m - 1, d, hms, M, S << 1);
 }
+/* unsigned 64-bit little-endian value (exact below 2^53) */
+function read_uint64(blob) {
+	var lo = blob.read_shift(4) >>> 0, hi = blob.read_shift(4) >>> 0;
+	return hi * 4294967296 + lo;
+}
+
 function parse_extra_field(blob) {
 	prep_blob(blob, 0);
 	var o = {};
@@ -178,6 +178,13 @@ function parse_extra_field(blob) {
 					if(flags & 4) p.ctime = blob.read_shift(4);
 				}
 				if(p.mtime) p.mt = new Date(p.mtime*1000);
+			}
+			break;
+			/* ZIP64 Extended Information: 8-byte values for the 32-bit header
+			   fields that hold 0xFFFFFFFF, in header order (APPNOTE 4.5.3) */
+			case 0x0001: {
+				p.values = [];
+				while(blob.l + 8 <= tgt) p.values.push(read_uint64(blob));
 			}
 			break;
 		}
@@ -335,9 +342,27 @@ function sectorify(file, ssz) {
 }
 
 /* [MS-CFB] 2.6.4 Red-Black Tree */
+/* Parent of every entry reachable from the root: the members of each child
+   tree (C, then L/R) belong to the storage that points at that tree.
+   Unreachable entries keep -1, and each entry is visited once. */
+function tree_parents(FI, pl) {
+	var parent = [], seen = [], stack = [];
+	var i = 0, n = 0, p = 0;
+	for(i = 0; i < pl; ++i) parent[i] = -1;
+	if(pl > 0 && FI[0]) { seen[0] = true; stack.push(FI[0].C, 0); }
+	while(stack.length > 0) {
+		p = stack.pop(); n = stack.pop();
+		if(n < 0 || n >= pl || seen[n] || !FI[n]) continue;
+		seen[n] = true;
+		parent[n] = p;
+		stack.push(FI[n].L, p, FI[n].R, p, FI[n].C, n);
+	}
+	return parent;
+}
+
 function build_full_paths(FI, FP, Paths) {
 	var i = 0, L = 0, R = 0, C = 0, j = 0, pl = Paths.length;
-	var dad = [], q = [];
+	var dad = [], q = [], walk = [];
 
 	for(; i < pl; ++i) { dad[i]=q[i]=i; FP[i]=Paths[i]; }
 
@@ -357,11 +382,20 @@ function build_full_paths(FI, FP, Paths) {
 		else if(L !== -1 && dad[L] !== L) dad[i] = dad[L];
 	}
 
+	/* An entry listed before its parent storage inside a sibling subtree is
+	   left without a parent above (js-cfb#15); take its parent from the tree. */
+	var tree = tree_parents(FI, pl);
+	for(i=1; i < pl; ++i) if(dad[i] === i && tree[i] >= 0) dad[i] = tree[i];
+
 	for(i=1; i < pl; ++i) {
 		if(FI[i].type === 0 /* unknown */) continue;
 		j = i;
+		walk[i] = i;
 		if(j != dad[j]) do {
 			j = dad[j];
+			/* a cycle of parent links never ends and doubles the path on each pass */
+			if(walk[j] === i) throw new Error("Directory tree cycle at entry " + i);
+			walk[j] = i;
 			FP[i] = FP[j] + "/" + FP[i];
 		} while (j !== 0 && -1 !== dad[j] && j != dad[j]);
 		dad[i] = -1;
@@ -513,6 +547,8 @@ function read_file(filename, options) {
 }
 
 function read(blob, options) {
+	/* js-cfb#20: a parsed container is not file data */
+	if(blob && typeof blob == "object" && (blob).FileIndex && (blob).FullPaths) throw new TypeError("CFB.read expects file data, not a parsed container; use CFB.find to get an entry");
 	var type = options && options.type;
 	if(!type) {
 		if(has_buf && Buffer.isBuffer(blob)) type = "buffer";
@@ -544,6 +580,18 @@ function seed_cfb(cfb) {
 	cfb.FileIndex.push(({ name: nm, type: 2, content:p, size:4, L:69, R:69, C:69 }));
 	cfb.FullPaths.push(cfb.FullPaths[0] + nm);
 	rebuild_cfb(cfb);
+}
+
+/* Remove the seed stream after a rebuild, for writers that must not add any
+   stream (js-cfb#22); the remaining entries stay sorted, so relink in place. */
+function unseed_cfb(cfb) {
+	var path = cfb.FullPaths[0] + "\u0001Sh33tJ5";
+	for(var i = 1; i < cfb.FullPaths.length; ++i) if(cfb.FullPaths[i] === path) {
+		cfb.FullPaths.splice(i, 1);
+		cfb.FileIndex.splice(i, 1);
+		link_cfb(cfb);
+		return;
+	}
 }
 function rebuild_cfb(cfb, f) {
 	init_cfb(cfb);
@@ -599,7 +647,14 @@ function rebuild_cfb(cfb, f) {
 	data.sort(function(x,y) { return namecmp(x[0], y[0]); });
 	cfb.FullPaths = []; cfb.FileIndex = [];
 	for(i = 0; i < data.length; ++i) { cfb.FullPaths[i] = data[i][0]; cfb.FileIndex[i] = data[i][1]; }
-	for(i = 0; i < data.length; ++i) {
+	link_cfb(cfb);
+}
+
+/* Directory links for entries already sorted by namecmp: each storage points
+   at its first child (C) and siblings are chained in order through R. */
+function link_cfb(cfb) {
+	var i = 0, j = 0, n = cfb.FullPaths.length;
+	for(i = 0; i < n; ++i) {
 		var elt = cfb.FileIndex[i];
 		var nm = cfb.FullPaths[i];
 
@@ -609,21 +664,20 @@ function rebuild_cfb(cfb, f) {
 		elt.start = 0;
 		elt.clsid = (elt.clsid || HEADER_CLSID);
 		if(i === 0) {
-			elt.C = data.length > 1 ? 1 : -1;
+			elt.C = n > 1 ? 1 : -1;
 			elt.size = 0;
 			elt.type = 5;
 		} else if(nm.slice(-1) == "/") {
-			for(j=i+1;j < data.length; ++j) if(dirname(cfb.FullPaths[j])==nm) break;
-			elt.C = j >= data.length ? -1 : j;
-			for(j=i+1;j < data.length; ++j) if(dirname(cfb.FullPaths[j])==dirname(nm)) break;
-			elt.R = j >= data.length ? -1 : j;
+			for(j=i+1;j < n; ++j) if(dirname(cfb.FullPaths[j])==nm) break;
+			elt.C = j >= n ? -1 : j;
+			for(j=i+1;j < n; ++j) if(dirname(cfb.FullPaths[j])==dirname(nm)) break;
+			elt.R = j >= n ? -1 : j;
 			elt.type = 1;
 		} else {
 			if(dirname(cfb.FullPaths[i+1]||"") == dirname(nm)) elt.R = i + 1;
 			elt.type = 2;
 		}
 	}
-
 }
 
 function _write(cfb, options) {
@@ -631,6 +685,7 @@ function _write(cfb, options) {
 	/* MAD is order-sensitive, skip rebuild and sort */
 	if(_opts.fileType == 'mad') return write_mad(cfb, _opts);
 	rebuild_cfb(cfb);
+	if(_opts.noseed) unseed_cfb(cfb);
 	switch(_opts.fileType) {
 		case 'zip': return write_zip(cfb, _opts);
 		//case 'mad': return write_mad(cfb, _opts);
@@ -728,9 +783,9 @@ flen = file.content.length;
 		file = cfb.FileIndex[i];
 		if(i === 0) file.start = file.size ? file.start - 1 : ENDOFCHAIN;
 		var _nm = (i === 0 && _opts.root) || file.name;
-		if(_nm.length > 32) {
-			console.error("Name " + _nm + " will be truncated to " + _nm.slice(0,32));
-			_nm = _nm.slice(0, 32);
+		if(_nm.length > 31) {
+			console.error("Name " + _nm + " will be truncated to " + _nm.slice(0,31));
+			_nm = _nm.slice(0, 31);
 		}
 		flen = 2*(_nm.length+1);
 		o.write_shift(64, _nm, "utf16le");
@@ -1244,12 +1299,23 @@ function inflate(data, usz) {
 	/* header includes final bit and type bits */
 	var header = 0;
 
-	var outbuf = new_unsafe_buf(usz ? usz : (1<<18));
+	/* With a declared size the whole buffer is returned, so it must start
+	   zero-filled: after a short stream it would otherwise hold leftover
+	   process memory. Buffer.alloc zeroes lazily, unlike filling afterwards,
+	   so a huge declared size costs no more memory than before (Node.js
+	   releases before 4.5 have no Buffer.alloc and fill it eagerly). */
+	var outbuf = usz ? new_raw_buf(usz) : new_unsafe_buf(1<<18);
 	var woff = 0;
 	var OL = outbuf.length>>>0;
 	var max_len_1 = 0, max_len_2 = 0;
 
+	/* Past the end every read yields zero bits: a block header there is never
+	   final, and a Huffman decode repeats one symbol forever unless it is the
+	   end-of-block code, read within 64 bits. Either case would never return. */
+	var end_bits = data.length * 8;
+
 	while((header&1) == 0) {
+		if(boff >= end_bits) throw new Error("Unexpected end of DEFLATE stream");
 		header = read_bits_3(data, boff); boff += 3;
 		if((header >>> 1) == 0) {
 			/* Stored block */
@@ -1272,10 +1338,13 @@ function inflate(data, usz) {
 			max_len_1 = dyn_len_1; max_len_2 = dyn_len_2;
 		}
 		for(;;) { // while(true) is apparently out of vogue in modern JS circles
+			if(boff > end_bits + 128) throw new Error("Unexpected end of DEFLATE stream");
 			if(!usz && (OL < woff + 32767)) { outbuf = realloc(outbuf, woff + 32767); OL = outbuf.length; }
 			/* ingest code and move read head */
 			var bits = read_bits_n(data, boff, max_len_1);
 			var code = (header>>>1) == 1 ? fix_lmap[bits] : dyn_lmap[bits];
+			/* valid codes are 1-15 bits; a 0-bit code repeats at the same offset forever */
+			if(!(code & 15)) throw new Error("Invalid DEFLATE literal/length code");
 			boff += code & 15; code >>>= 4;
 			/* 0-255 are literals, 256 is end of block token, 257+ are copy tokens */
 			if(((code>>>8)&0xFF) === 0) outbuf[woff++] = code;
@@ -1346,6 +1415,18 @@ function parse_zip(file, options) {
 	blob.l += 6;
 	var start_cd = blob.read_shift(4);
 
+	/* ZIP64 end of central directory, located by the record just before */
+	if((fcnt === 0xFFFF || (start_cd >>> 0) === 0xFFFFFFFF) && i >= 20 && __readInt32LE(blob, i - 20) === 0x07064b50) {
+		blob.l = i - 12;
+		var eocd64 = read_uint64(blob);
+		if(eocd64 + 56 <= blob.length && __readInt32LE(blob, eocd64) === 0x06064b50) {
+			blob.l = eocd64 + 24;
+			fcnt = read_uint64(blob);
+			blob.l += 16;
+			start_cd = read_uint64(blob);
+		}
+	}
+
 	/* parse central directory */
 	blob.l = start_cd;
 
@@ -1361,6 +1442,15 @@ function parse_zip(file, options) {
 		var offset = blob.read_shift(4);
 		var EF = parse_extra_field(blob.slice(blob.l+namelen, blob.l+namelen+efsz));
 		blob.l += namelen + efsz + fcsz;
+
+		/* ZIP64: only the fields set to 0xFFFFFFFF follow, in this order */
+		var z64 = (EF[0x0001]||{}).values;
+		if(z64) {
+			var zi = 0;
+			if((usz >>> 0) === 0xFFFFFFFF && zi < z64.length) usz = z64[zi++];
+			if((csz >>> 0) === 0xFFFFFFFF && zi < z64.length) csz = z64[zi++];
+			if((offset >>> 0) === 0xFFFFFFFF && zi < z64.length) offset = z64[zi++];
+		}
 
 		var L = blob.l;
 		blob.l = offset + 4;
@@ -1390,20 +1480,32 @@ function parse_local_file(blob, csz, usz, o, EF) {
 
 	// TODO: flags & (1<<11) // UTF8
 	var name = ""; for(var i = 0; i < namelen; ++i) name += String.fromCharCode(blob[blob.l++]);
+	var zip64 = false;
 	if(efsz) {
 		var ef = parse_extra_field(blob.slice(blob.l, blob.l + efsz));
 		if((ef[0x5455]||{}).mt) date = ef[0x5455].mt;
 		if(((EF||{})[0x5455]||{}).mt) date = EF[0x5455].mt;
+		/* ZIP64 local headers carry both sizes when either is 0xFFFFFFFF */
+		var z64 = (ef[0x0001]||{}).values;
+		if(z64 && ((_usz >>> 0) === 0xFFFFFFFF || (_csz >>> 0) === 0xFFFFFFFF)) {
+			zip64 = true;
+			var zi = 0;
+			if(z64.length >= 2 || (_usz >>> 0) === 0xFFFFFFFF) _usz = z64[zi++];
+			if(zi < z64.length) _csz = z64[zi++];
+		}
 	}
 	blob.l += efsz;
 
 	/* [encryption header] */
 
 	/* [file data] */
+	/* streamed stored entries leave the local sizes at zero and append a data
+	   descriptor; the central directory size is the only way to find the end */
+	if(meth == 0 && (flags & 8) && !_csz && csz > 0) _csz = csz;
 	var data = blob.slice(blob.l, blob.l + _csz);
 	switch(meth) {
 		case 8: data = _inflateRawSync(blob, _usz); break;
-		case 0: break; // TODO: scan for magic number
+		case 0: blob.l += _csz; break; // TODO: scan for magic number
 		default: throw new Error("Unsupported ZIP Compression method " + meth);
 	}
 
@@ -1412,8 +1514,13 @@ function parse_local_file(blob, csz, usz, o, EF) {
 	if(flags & 8) {
 		crc32 = blob.read_shift(4);
 		if(crc32 == 0x08074b50) { crc32 = blob.read_shift(4); wrn = true; }
-		_csz = blob.read_shift(4);
-		_usz = blob.read_shift(4);
+		if(zip64) {
+			_csz = read_uint64(blob);
+			_usz = read_uint64(blob);
+		} else {
+			_csz = blob.read_shift(4);
+			_usz = blob.read_shift(4);
+		}
 	}
 
 	if(_csz != csz) warn_or_throw(wrn, "Bad compressed size: " + csz + " != " + _csz);
@@ -1445,9 +1552,9 @@ function write_zip(cfb, options) {
 		var namebuf = new_buf(fp.length);
 		for(j = 0; j < fp.length; ++j) namebuf.write_shift(1, fp.charCodeAt(j) & 0x7F);
 		namebuf = namebuf.slice(0, namebuf.l);
-		crcs[fcnt] = CRC32.buf(fi.content, 0);
+		crcs[fcnt] = typeof fi.content == "string" ? CRC32.bstr(fi.content, 0) : CRC32.buf(fi.content, 0);
 
-		var outbuf = fi.content;
+		var outbuf = typeof fi.content == "string" ? s2a(fi.content) : fi.content;
 		if(method == 8) outbuf = _deflateRawSync(outbuf);
 
 		/* local file header */
@@ -1628,7 +1735,7 @@ function parse_mime(cfb, data, root) {
 	for(;di < 10; ++di) {
 		var line = data[di];
 		if(!line || line.match(/^\s*$/)) break;
-		var m = line.match(/^(.*?):\s*([^\s].*)$/);
+		var m = line.match(/^([^:]*?):\s*([^\s].*)$/);
 		if(m) switch(m[1].toLowerCase()) {
 			case "content-location": fname = m[2].trim(); break;
 			case "content-type": ctype = m[2].trim(); break;

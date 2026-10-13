@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "lib": [ "es5" ],
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strict": true,
+        "paths": { "cfb": ["./index.d.ts"] },
+        "types": [],
+        "noEmit": true
+    },
+    "files": [ "index.d.ts", "stackline.ts" ]
+}

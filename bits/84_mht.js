@@ -99,7 +99,7 @@ function parse_mime(cfb/*:CFBContainer*/, data/*:Array<string>*/, root/*:string*
 	for(;di < 10; ++di) {
 		var line = data[di];
 		if(!line || line.match(/^\s*$/)) break;
-		var m = line.match(/^(.*?):\s*([^\s].*)$/);
+		var m = line.match(/^([^:]*?):\s*([^\s].*)$/);
 		if(m) switch(m[1].toLowerCase()) {
 			case "content-location": fname = m[2].trim(); break;
 			case "content-type": ctype = m[2].trim(); break;

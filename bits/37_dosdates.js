@@ -22,17 +22,11 @@ function write_dos_date(buf/*:CFBlob*/, date/*:Date|string*/) {
 function parse_dos_date(buf/*:CFBlob*/)/*:Date*/ {
 	var hms = buf.read_shift(2) & 0xFFFF;
 	var ymd = buf.read_shift(2) & 0xFFFF;
-	var val = new Date();
 	var d = ymd & 0x1F; ymd >>>= 5;
 	var m = ymd & 0x0F; ymd >>>= 4;
-	val.setMilliseconds(0);
-	val.setFullYear(ymd + 1980);
-	val.setMonth(m-1);
-	val.setDate(d);
 	var S = hms & 0x1F; hms >>>= 5;
 	var M = hms & 0x3F; hms >>>= 6;
-	val.setHours(hms);
-	val.setMinutes(M);
-	val.setSeconds(S<<1);
-	return val;
+	/* Setting the fields one by one on today's date shifted the month on the
+	   29th-31st of a month; one constructor call normalizes them together. */
+	return new Date(ymd + 1980, m - 1, d, hms, M, S << 1);
 }

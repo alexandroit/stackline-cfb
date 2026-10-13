@@ -4,6 +4,8 @@ function read_file(filename/*:string*/, options/*:CFBReadOpts*/) {
 }
 
 function read(blob/*:RawBytes|string*/, options/*:CFBReadOpts*/) {
+	/* js-cfb#20: a parsed container is not file data */
+	if(blob && typeof blob == "object" && (/*::(*/blob/*:: :any)*/).FileIndex && (/*::(*/blob/*:: :any)*/).FullPaths) throw new TypeError("CFB.read expects file data, not a parsed container; use CFB.find to get an entry");
 	var type = options && options.type;
 	if(!type) {
 		if(has_buf && Buffer.isBuffer(blob)) type = "buffer";

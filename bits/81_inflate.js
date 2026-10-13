@@ -89,12 +89,23 @@ function inflate(data, usz/*:number*/) {
 	/* header includes final bit and type bits */
 	var header = 0;
 
-	var outbuf = new_unsafe_buf(usz ? usz : (1<<18));
+	/* With a declared size the whole buffer is returned, so it must start
+	   zero-filled: after a short stream it would otherwise hold leftover
+	   process memory. Buffer.alloc zeroes lazily, unlike filling afterwards,
+	   so a huge declared size costs no more memory than before (Node.js
+	   releases before 4.5 have no Buffer.alloc and fill it eagerly). */
+	var outbuf = usz ? new_raw_buf(usz) : new_unsafe_buf(1<<18);
 	var woff = 0;
 	var OL = outbuf.length>>>0;
 	var max_len_1 = 0, max_len_2 = 0;
 
+	/* Past the end every read yields zero bits: a block header there is never
+	   final, and a Huffman decode repeats one symbol forever unless it is the
+	   end-of-block code, read within 64 bits. Either case would never return. */
+	var end_bits = data.length * 8;
+
 	while((header&1) == 0) {
+		if(boff >= end_bits) throw new Error("Unexpected end of DEFLATE stream");
 		header = read_bits_3(data, boff); boff += 3;
 		if((header >>> 1) == 0) {
 			/* Stored block */
@@ -117,10 +128,13 @@ function inflate(data, usz/*:number*/) {
 			max_len_1 = dyn_len_1; max_len_2 = dyn_len_2;
 		}
 		for(;;) { // while(true) is apparently out of vogue in modern JS circles
+			if(boff > end_bits + 128) throw new Error("Unexpected end of DEFLATE stream");
 			if(!usz && (OL < woff + 32767)) { outbuf = realloc(outbuf, woff + 32767); OL = outbuf.length; }
 			/* ingest code and move read head */
 			var bits = read_bits_n(data, boff, max_len_1);
 			var code = (header>>>1) == 1 ? fix_lmap[bits] : dyn_lmap[bits];
+			/* valid codes are 1-15 bits; a 0-bit code repeats at the same offset forever */
+			if(!(code & 15)) throw new Error("Invalid DEFLATE literal/length code");
 			boff += code & 15; code >>>= 4;
 			/* 0-255 are literals, 256 is end of block token, 257+ are copy tokens */
 			if(((code>>>8)&0xFF) === 0) outbuf[woff++] = code;

@@ -34,6 +34,8 @@ jobs:
       - run: npm run lint --if-present
       - run: npm run test:types --if-present
       - run: npm run test:package --if-present
+      - name: Compare results with cfb@1.2.2 on the repository fixtures
+        run: npm run test:differential -- test_files test/fixtures
       - run: npm audit --audit-level=low
       - name: Ensure builds and tests preserve committed source
         run: git diff --exit-code
@@ -47,3 +49,28 @@ jobs:
           path: artifact/*.tgz
           if-no-files-found: error
           retention-days: 90
+  legacy-runtime:
+    name: Node.js ${{ matrix.node }} runtime
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['0.8.28', '0.10.48', '0.12.18', '4.9.1', '6.17.1', '8.17.0', '10.24.1', '12.22.12', '14.21.3', '16.20.2', '18.20.8']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the official Node.js ${{ matrix.node }} build
+        env:
+          NODE_VERSION: ${{ matrix.node }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="node-v${NODE_VERSION}-linux-x64.tar.gz"
+          curl -sfLO "https://nodejs.org/dist/v${NODE_VERSION}/${archive}"
+          curl -sfL "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" | grep " ${archive}\$" | sha256sum -c -
+          mkdir "$RUNNER_TEMP/node"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/node" --strip-components=1
+          rm "$archive"
+      - name: Read, write, and round-trip the committed build
+        run: '"$RUNNER_TEMP/node/bin/node" test/legacy-smoke.js'
