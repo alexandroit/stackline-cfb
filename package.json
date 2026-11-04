@@ -1,6 +1,6 @@
 {
   "name": "@stackline/cfb",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "sheetjs",
   "description": "Drop-in replacement for cfb 1.2.2: read and write compound files (OLE/CFB), ZIP and MHT containers, with fixes for hangs, ZIP64, CVE-2024-22363 and bugs the original never released",
   "keywords": [
@@ -30,10 +30,10 @@
   "devDependencies": {
     "@types/node": "20.19.43",
     "cfb": "1.2.2",
-    "crc-32": "npm:@stackline/crc-32@1.0.0",
+    "crc-32": "npm:@stackline/crc-32@1.0.2",
     "mocha": "12.0.2",
     "typescript": "7.0.2",
-    "uglify-js": "npm:@stackline/uglify-js@1.0.2"
+    "uglify-js": "npm:@stackline/uglify-js@1.0.5"
   },
   "repository": {
     "type": "git",
@@ -73,5 +73,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "overrides": {
+    "glob@>=9 <14.0.3": "14.0.3",
+    "minimatch@>=7 <11.0.4": "11.0.4"
   }
 }

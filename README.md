@@ -10,7 +10,7 @@
 
 **[Documentation](https://alexandro.net/docs/vanilla/cfb/)** | **[npm](https://www.npmjs.com/package/@stackline/cfb)** | **[Issues](https://github.com/alexandroit/stackline-cfb/issues)** | **[Repository](https://github.com/alexandroit/stackline-cfb)**
 
-**Current package version:** `1.1.0`
+**Current package version:** `1.1.1`
 
 ---
 
@@ -60,7 +60,7 @@ can still make `cfb@1.2.2` loop forever.
 
 | Item | Value |
 | --- | --- |
-| Package | `@stackline/cfb@1.1.0` |
+| Package | `@stackline/cfb@1.1.1` |
 | Replaces | `cfb@1.2.2` and earlier 1.x releases |
 | Node.js runtime | `>=0.8` |
 | Module entry | `./cfb` (CommonJS) |
