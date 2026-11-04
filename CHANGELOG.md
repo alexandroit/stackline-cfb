@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 - 2026-11-04
+
+- Refresh verified Stackline maintenance dependencies and the audited dependency lockfile. Validate the exact README selected by npm before publication.
+
 ## 1.1.0 - 2026-10-13
 
 A drop-in replacement for `cfb@1.2.2`. On the SheetJS test corpus every read
